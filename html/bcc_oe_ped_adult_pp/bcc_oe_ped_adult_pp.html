@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>Invalid PowerPlan for Location</title>
+ <meta name="discern" content="CCLLINK,CCLNEWWINDOW,CCLEVENT,MPAGES_EVENT,APPLINK,XMLCCLREQUEST">
+ <meta http-equiv="x-ua-compatible" content="IE=edge" />
+ <style>
+ 
+ 
+	.basic a:link {
+  		color: #000000;
+	}
+	.basic a:visited,
+	.basic a:hover,
+	.basic a:active {
+  		color: #000000;
+	}
+ 
+	#banner_bar {
+		background: #319DD8;
+		background: -moz-linear-gradient(top, #319DD8 0%, #17629a 100%);
+		background: -webkit-linear-gradient(top, #319DD8 0%, #17629a 100%);
+		background: linear-gradient(to bottom, #319DD8 0%, #17629a 100%);
+	}
+ 
+	#banner_bar_font {
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 14px;
+		letter-spacing: 0px;
+		word-spacing: 0px;
+		color: #FFFFFF;
+		font-weight: normal;
+		text-decoration: none;
+		font-style: normal;
+		font-variant: normal;
+		text-transform: none;
+	}
+ 
+#caveat_font {
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 12px;
+		letter-spacing: 0px;
+		word-spacing: 0px;
+		color: #000000;
+		font-weight: normal;
+		text-decoration: none;
+		font-style: normal;
+		font-variant: normal;
+		text-transform: none;
+	}
+ 
+.pp_section {
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 16px;
+		letter-spacing: 0px;
+		word-spacing: 0px;
+		color: #000000;
+		font-weight: bold;
+		text-decoration: italic;
+		line-height: 20px;
+		font-style: normal;
+		font-variant: normal;
+		text-transform: none;
+	}
+#body_font {
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 16px;
+		letter-spacing: 0px;
+		word-spacing: 0px;
+		color: #000000;
+		font-weight: normal
+		line-height: 20px;
+		text-decoration: none;
+		font-style: normal;
+		font-variant: normal;
+		text-transform: none;
+	}
+ 
+	#debug_font {
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 6px;
+		letter-spacing: 0px;
+		word-spacing: 0px;
+		color: #FFFFFF;
+		font-weight: normal;
+		text-decoration: none;
+		font-style: normal;
+		font-variant: normal;
+		text-transform: none;
+	}
+ 
+	.myButton { color: rgb(255, 255, 255);
+				font-size: 15px;
+				line-height: 15px;
+				padding: 5px;
+				border-radius: 3px;
+				font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+				font-weight: normal;
+				text-decoration: none;
+				font-style: normal;
+				font-variant: normal;
+				text-transform: none;
+				background-image: radial-gradient(at center center, rgb(28, 110, 164) 0%, rgb(35, 136, 203) 100%, rgb(20, 78, 117) 100%);
+				display: inline-block;}
+	.myButton:hover { background: #1C6EA4; }
+	.myButton:active { background: #144E75; }
+ </style>
+ 
+<script language="javascript">
+ 
+var patientDataSplit = "@MESSAGE:[PATIENTDATA]";
+if (patientDataSplit.substring(0,1) == "@")	{
+	var patientID = 22523363.0
+	var encounterID = 112634647.0
+	var orderID = 966943713.0
+} else {
+	var patientData = patientDataSplit.split("|");
+	var patientID = patientData[0];
+	var encounterID = patientData[1];
+	var orderID = patientData[2];
+}
+ 
+var patientDataJSON = '{"PATIENTDATA":{"PERSON_ID":'+patientID+',"ENCNTR_ID":'+encounterID+'}}';
+ 
+ 
+function updateOrderButton()	{
+	document.getElementById("pp_order_id").value = orderID ;
+}
+ 
+function processOrder()	{
+		var OrderProcessObj = window.external.XMLCclRequest();
+ 		var orderParams = '"MINE",'+orderID;
+ 		//alert("Processing: "+orderParams)
+	 	OrderProcessObj.open("GET", "bc_powerplan_dc", false);
+		OrderProcessObj.send('"MINE",'+orderID);
+		OrderProcessObj.cleanup();
+		CCLEVENT("EVENT_NOTIFY_DELETE_HTMLONLY");
+}
+ 
+function Dismiss()	{
+ 
+		CCLEVENT("EVENT_NOTIFY_DELETE_HTMLONLY");
+}
+ 
+function getPowerPlanName()	{
+	var PowerPlanProcess = window.external.XMLCclRequest();
+	var orderParams = '"MINE",'+orderID;
+	PowerPlanProcess.open("GET", "bc_get_powerplan_data", false);
+	PowerPlanProcess.send('"MINE",'+orderID);
+ 
+	if (PowerPlanProcess.status == 200)	{
+ 
+			var PowerPlanData = JSON.parse(PowerPlanProcess.responseText);
+ 			document.getElementById('pp_name').textContent 			=  PowerPlanData.PLAN_DATA.PLAN_NAME;
+		}
+ 
+		PowerPlanProcess.cleanup();
+ 
+}
+ 
+function fillInPatientBanner() {
+ 
+	 	var bannerObj = window.external.XMLCclRequest();
+ 
+	 	bannerObj.open("GET", "bc_all_mp_patient_banner", false);
+	 	bannerObj.setBlobIn(patientDataJSON);
+		bannerObj.send('"MINE"');
+ 
+	if (bannerObj.status == 200) {
+ 		//document.getElementById('patientdatajson').innerHTML = bannerObj.responseText;
+ 		//document.getElementById("resultdatajson").innerHTML = resultDataJSON;
+ 
+ 		var patientBanner = JSON.parse(bannerObj.responseText);
+ 		document.getElementById('patient_name').innerHTML 			=  patientBanner.PATIENT_BANNER.NAME_FULL;
+ 		document.getElementById('patient_dob').innerHTML 			=  patientBanner.PATIENT_BANNER.DOB;
+ 		document.getElementById('patient_age').innerHTML  			=  patientBanner.PATIENT_BANNER.AGE;
+ 		document.getElementById('patient_mrn').innerHTML  			=  patientBanner.PATIENT_BANNER.MRN;
+ 		document.getElementById('patient_fin').innerHTML  			= patientBanner.PATIENT_BANNER.FIN;
+ 		document.getElementById('patient_phn').innerHTML  			= patientBanner.PATIENT_BANNER.PHN;
+ 
+ 		document.getElementById('patient_encntr_type').innerHTML 	=  patientBanner.PATIENT_BANNER.ENCNTR_TYPE;
+ 		document.getElementById('patient_encntr_status').innerHTML 	=  patientBanner.PATIENT_BANNER.ENCNTR_STATUS;
+ 		document.getElementById('patient_loc_unit').innerHTML 	    =  patientBanner.PATIENT_BANNER.LOC_UNIT;
+ 		document.getElementById('patient_loc_room_bed').innerHTML 	=  patientBanner.PATIENT_BANNER.LOC_ROOM_BED;
+ 		document.getElementById('patient_sex').innerHTML 			=  patientBanner.PATIENT_BANNER.SEX;
+ 
+	}
+	else {
+   		alert('XMLCclRequest failed with status of ' + bannerObj.status);
+	}
+ 
+	bannerObj.cleanup();
+ 
+	updateOrderButton();
+	getPowerPlanName();
+}
+ 
+</script>
+</head>
+<body onload="javascript:fillInPatientBanner();">
+<div id=banner_bar>
+<div id=banner_bar_font>
+<table width=100% border=0>
+		<tr>
+		<td rowspan=3 valign=top>
+		<b><span id=patient_name></span></b>
+		</td>
+		<td align=left>
+		DOB:<span id=patient_dob></span>
+		<td align=left>
+		MRN:<span id=patient_mrn></span>
+		</td>
+		<td align=left>
+		Location:<span id=patient_loc_unit></span>&nbsp<span id=patient_loc_room_bed></span>
+		</td>
+		</tr>
+		<tr>
+		<td align=left>
+		Age:<span id=patient_age></span>
+		</td>
+		<td align=left>
+		Enc:<span id=patient_fin></span>
+		</td>
+		<td align=left>
+		Enc Type:<span id=patient_encntr_type></span>;&nbsp;<span id=patient_encntr_status></span>
+		</td>
+		</tr>
+		<tr>
+		<td align=left>
+		Gender:<span id=patient_sex></span>
+		</td>
+		<td align=left>
+		PHN:<span id=patient_phn></span>
+		</td>
+		</tr>
+		</table>
+</div>
+</div>
+<br/>
+<div id=body_font>
+<br/>
+The <span id="pp_name" class="pp_section"><i>PowerPlan Name</i></span> is an <b><u>ADULT</b></u> PowerPlan.
+Consider discontinuing this plan with the button below and ordering a <b><u>PEDIATRIC</b></u> plan.
+<br/><br/>
+<table><tr><td>
+<button class="myButton" id="pp_order_id" name="order_id" value="0.0" onclick="processOrder()">Discontinue ADULT PowerPlan</button>
+</td><td>&nbsp</td><td>
+<button class="myButton" id="pp_dismiss" name="dismiss" onclick='javascript:CCLEVENT("EVENT_NOTIFY_DELETE_HTMLONLY");'>I acknowledge. Continue ordering ADULT PowerPlan</button>
+</td></tr></table>
+<br/>
+<br/>
+<div id=debug_font>
+@MESSAGE:[PATIENTDATA]
+</div>
+</div>
+ 
+</body>
+</html>
